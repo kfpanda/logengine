@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <properties>
+        <property name="LOG_HOME">./logs/</property>
+        <!-- 日志备份目录 -->
+        <property name="BACKUP_HOME">{LOG_HOME}/backup</property>
+        <property name="STAT_NAME">stat</property>
+        <property name="SERVER_NAME">logengine</property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <NoSql name="mongodbAppender">
+            <MongoDb databaseName="awifi_log" collectionName="applicationLog" server="192.168.10.139"
+                     username="jieru_log" password="log123#@!" />
+        </NoSql>
+    </Appenders>
+    <Loggers>
+        <Root level="error">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <Root level="info">
+            <AppenderRef ref="mongodbAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>

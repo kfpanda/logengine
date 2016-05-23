@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="com.kfpanda" status="WARN">
+    <properties>
+        <Property name="baseDir">/service/logs/</Property>
+        <property name="log_pattern">%-d{yyyy-MM-dd HH:mm:ss.SSS} [%t:%r] [%F:%L] - [%p] %m%n</property>
+        <property name="file_name">logengine.log</property>
+        <property name="file_name_test">./logs/test.log</property>
+        <property name="rolling_file_name">logengine-%d{yyyy-MM-dd-HH}.log.%i</property>
+
+        <property name="every_file_size">100M</property> <!-- 日志切割的最小单位 -->
+        <property name="output_log_level">ERROR</property> <!-- 日志输出级别 -->
+    </properties>
+
+    <Appenders>
+        <!--输出控制台的配置-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--这个都知道是输出日志的格式-->
+            <PatternLayout pattern="${log_pattern}"/>
+        </Console>
+        <RollingFile name="RollingFile" fileName="${baseDir}${file_name}"
+                     filePattern="${baseDir}${rolling_file_name}">
+            <PatternLayout pattern="${log_pattern}" />
+            <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            <SizeBasedTriggeringPolicy size="${every_file_size}" />
+        </RollingFile>
+        <redisAppender name="Redis" host="192.168.36.18">
+            <PatternLayout pattern="${log_pattern}"/>
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+        </redisAppender>
+        <NoSql name="databaseAppender">
+            <MongoDb databaseName="awifi_log" collectionName="test_log"
+                     server="192.168.10.139" username="jieru_log" password="log123#@!" />
+        </NoSql>
+
+
+    </Appenders>
+    <Loggers>
+        <!--建立一个默认的root的logger，需要在root的level中指定输出的级别，-->
+        <Root level="${output_log_level}">
+            <appender-ref ref="Console"/>
+        </Root>
+        <!-- dubbo 日志 -->
+        <Logger name="com.alibaba.dubbo" additivity="false" level="ERROR">
+            <appender-ref ref="Redis"/>
+            <appender-ref ref="Console"/>
+        </Logger>
+        <!-- spring 日志 -->
+        <Logger name="org.springframework" additivity="false" level="INFO">
+            <appender-ref ref="Console"/>
+        </Logger>
+        <!-- http 日志 -->
+        <Logger name="org.apache.http" additivity="false" level="INFO">
+            <appender-ref ref="Console"/>
+        </Logger>
+        <!-- http 日志 -->
+        <Logger name="com.mchange.v2" additivity="false" level="INFO">
+            <appender-ref ref="Console"/>
+        </Logger>
+        <!-- dubbo 日志 -->
+        <Logger name="com.kfpanda" additivity="false" level="DEBUG">
+            <appender-ref ref="Redis"/>
+        </Logger>
+    </Loggers>
+</Configuration>
